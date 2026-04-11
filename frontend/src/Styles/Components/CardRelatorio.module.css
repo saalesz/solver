@@ -1,0 +1,256 @@
+.card {
+  box-sizing: border-box;
+
+  width: 800px;
+  height: 610px;
+
+  background: white;
+  border: 6px solid var(--Red-Negative);
+  box-shadow: 45px 77px 36px rgba(28, 27, 32, 0.01), 26px 44px 30px rgba(28, 27, 32, 0.05), 11px 19px 22px rgba(28, 27, 32, 0.09), 3px 5px 12px rgba(28, 27, 32, 0.1);
+  border-radius: 20px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px;
+  gap: 314px;
+
+  position: relative;
+  width: 740px;
+  height: 64px;
+  left: 30px;
+  top: 17px;
+
+  & h2 {
+    width: auto;
+    height: 53px;
+
+    font-family: var(--font-inter);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 53px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    color: var(--Red-Negative);
+
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+  }
+
+  & .totalBadge {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+
+    width: 125px;
+    height: 64px;
+
+    background: rgba(185, 28, 28, 0.1);
+    border-radius: 16px;
+
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+
+    font-family: var(--font-inter);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 36px;
+    line-height: 44px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+  }
+}
+
+.content {
+  position: relative;
+  width: 740px;
+  height: 460px;
+  left: calc(50% - 740px/2);
+  top: 53px;
+
+  background: rgba(203, 203, 203, 0.3);
+  border-radius: 16px;
+
+  & .subTitulo {
+    position: relative;
+    width: 395px;
+    height: 53px;
+    left: 30px;
+    top: 30px;
+
+    font-family: var(--font-inter);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 53px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    color: var(--Gloun-Grey);
+  }
+}
+
+
+.row {
+  display: flex;
+  position: relative;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 15px;
+  border-radius: 0px 20px 20px 0px;
+
+  width: 660px;
+  height: 40px;
+  top: 55px;
+  left: 30px;
+}
+
+.label {
+  width: 100px;
+  height: 19px;
+
+  font-family: var(--font-inter);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+
+  color: var(--Gloun-Grey);
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.barContainer {
+  flex: 1;
+  height: 40px;
+  background: rgba(203, 203, 203, 0.26);
+  border-radius: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+  transition: width 0.5s ease-in-out;
+}
+
+.value {
+  position: absolute;
+  width: auto;
+  height: 15px;
+  right: 20px;
+  top: calc(50% - 15px/2 - 0.5px);
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 15px;
+  /* identical to box height */
+  display: flex;
+  align-items: center;
+
+  pointer-events: none;
+  z-index: 2
+}
+
+
+.footerRow {
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  padding: 12px 0px 0px;
+
+  position: relative;
+  width: 660px;
+  height: 48px;
+  left: 30px;
+  top: 90px;
+
+  border-top: 1.5px solid #1c1b204d;
+}
+
+.pecasInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  padding: 0px;
+  gap: 18px;
+
+  width: auto;
+  height: 36px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+
+  & .pecasLabel {
+    width: auto;
+    height: 23px;
+
+    font-family: var(--font-plus);
+    font-style: normal;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 35px;
+    display: flex;
+    align-items: center;
+
+    color: var(--Gloun-Grey);
+
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+  }
+}
+
+.pecasValue {
+  width: auto;
+  height: 21px;
+  right: 8px;
+  position: absolute;
+
+  font-family: var(--font-plus);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 35px;
+  display: flex;
+  align-items: center;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}

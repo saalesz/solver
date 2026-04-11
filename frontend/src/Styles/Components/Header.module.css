@@ -1,0 +1,137 @@
+.header {
+  position: relative;
+  width: 100%;
+  height: 80px;
+
+  background: var(--Gloun-Grey);
+}
+
+.logoContainer {
+  position: absolute;
+  width: auto;
+  height: 44px;
+  left: 320px;
+  top: calc(50% - 44px/2);
+}
+
+.infoContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 24px;
+
+  position: absolute;
+  width: auto;
+  height: 25px;
+  right: 320px;
+  top: calc(50% - 25px /2);
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 4px;
+
+  width: auto;
+  height: 25px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+
+  & .dateText {
+    width: auto;
+    height: 25px;
+
+    font-family: var(--font-plus);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 25px;
+    display: flex;
+    align-items: center;
+
+    color: var(--Snow);
+
+    flex: none;
+    order: 1;
+    flex-grow: 0;
+  }
+}
+
+.turnoGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 8px;
+
+  width: auto;
+  height: 25px;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+
+  & .selectWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .customSelect {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      background: transparent;
+      color: var(--Snow);
+      border: none;
+      border-radius: 6px;
+      padding: 0px 8px 0px 4px;
+      font-family: var(--font-plus);
+      font-style: normal;
+      font-weight: 700;
+      font-size: 20px;
+      line-height: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .customArrow {
+      position: absolute;
+      right: 0;
+      pointer-events: none;
+      color: var(--Red);
+    }
+
+    .customSelect option {
+      background-color: var(--Gloun-Grey);
+      color: var(--Snow);
+      padding: 10px;
+    }
+  }
+
+  & .proximoDisplay {
+    width: 25px;
+    height: 25px;
+
+    font-family: var(--font-plus);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 25px;
+    display: flex;
+    align-items: center;
+
+    color: var(--Snow);
+
+    flex: none;
+    order: 2;
+    flex-grow: 0;
+
+  }
+}
