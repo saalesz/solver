@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../Styles/Pages/Dashboard.module.css';
 import Header from '../Components/Header';
@@ -21,7 +21,6 @@ const Dashboard = () => {
   const infoTurno = getTurnoAtual();
   const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-  // 1. OBJETO PADRÃO PARA INICIAR COM "0"
   const estadoZerado = {
     backlog: 0,
     pecasFalta: 0,
@@ -32,11 +31,40 @@ const Dashboard = () => {
       { label: 'Em Anomalia', valor: 0, percentual: 0 },
     ]
   };
-  
-  // 2. INICIALIZANDO OS ESTADOS COM O OBJETO PADRÃO
+
   const [dadosIniciais, setDadosIniciais] = useState(estadoZerado);
   const [dadosFinais, setDadosFinais] = useState(estadoZerado);
   const [carregando, setCarregando] = useState(false);
+
+  // --- 1. LÓGICA DE PERSISTÊNCIA E PASSAGEM DE TURNO ---
+  useEffect(() => {
+    const carregarDados = () => {
+      const inicialSalvo = localStorage.getItem('dadosIniciaisSolver');
+      const finalSalvo = localStorage.getItem('dadosFinaisSolver');
+      const turnoSalvo = localStorage.getItem('ultimoTurnoRegistrado');
+      const turnoAtual = getTurnoAtual().atual;
+
+      // Se mudou o turno: O Fim do anterior vira o Início do atual
+      if (turnoSalvo && turnoSalvo !== turnoAtual) {
+        if (finalSalvo) {
+          const dadosMigrados = JSON.parse(finalSalvo);
+          setDadosIniciais(dadosMigrados);
+          localStorage.setItem('dadosIniciaisSolver', finalSalvo);
+        }
+        // Limpa o final para o novo colaborador subir o dele
+        setDadosFinais(estadoZerado);
+        localStorage.removeItem('dadosFinaisSolver');
+      } else {
+        // Se ainda é o mesmo turno, carrega tudo do cache (Resolve o F5)
+        if (inicialSalvo) setDadosIniciais(JSON.parse(inicialSalvo));
+        if (finalSalvo) setDadosFinais(JSON.parse(finalSalvo));
+      }
+
+      localStorage.setItem('ultimoTurnoRegistrado', turnoAtual);
+    };
+
+    carregarDados();
+  }, []);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -44,48 +72,111 @@ const Dashboard = () => {
 
     setCarregando(true);
     const formData = new FormData();
-    formData.append('report', file);
+    formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/reports/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await fetch('http://localhost:3001/api/reports/upload', {
+        method: 'POST',
+        body: formData,
       });
 
-      // Se o backend retornar { inicial, final }
-      if (response.data.inicial) setDadosIniciais(response.data.inicial);
-      if (response.data.final) setDadosFinais(response.data.final);
+      if (!response.ok) throw new Error('Erro na resposta do servidor');
 
+      const result = await response.json();
+      const kpis = result.kpis;
+
+      const novosDados = {
+        // Total Geral (O número grande no topo do seu Dashboard)
+        backlog: kpis.totalPedidos || 0,
+
+        // Soma das peças faltantes (Garante que o card de peças saia do zero)
+        pecasFalta: kpis.pecasComFalta || 0,
+
+        lista: [
+          {
+            label: 'Em onda',
+            valor: kpis.emOnda || 0,
+            percentual: kpis.totalPedidos > 0 ? ((kpis.emOnda / kpis.totalPedidos) * 100).toFixed(1) : 0
+          },
+          {
+            label: 'Separados',
+            // Mapeia os pedidos já concluídos no fluxo de separação
+            valor: kpis.separados || 0,
+            percentual: kpis.totalPedidos > 0 ? ((kpis.separados / kpis.totalPedidos) * 100).toFixed(1) : 0
+          },
+          {
+            label: 'Com falta',
+            valor: kpis.comFalta || 0,
+            percentual: kpis.totalPedidos > 0 ? ((kpis.comFalta / kpis.totalPedidos) * 100).toFixed(1) : 0
+          },
+          {
+            label: 'Em Anomalia',
+            // Agrupa 'Anomalia Sorter' + 'Aguardando Consolidação' para simplificar o Dashboard
+            valor: kpis.emAnomalia || 0,
+            percentual: kpis.totalPedidos > 0 ? ((kpis.emAnomalia / kpis.totalPedidos) * 100).toFixed(1) : 0
+          },
+        ]
+      };
+
+      // Automação de preenchimento:
+      // Se o inicial for zero, preenche o início. Se já tiver valor, preenche o fim.
+      if (dadosIniciais.backlog === 0) {
+        setDadosIniciais(novosDados);
+        localStorage.setItem('dadosIniciaisSolver', JSON.stringify(novosDados));
+      } else {
+        setDadosFinais(novosDados);
+        localStorage.setItem('dadosFinaisSolver', JSON.stringify(novosDados));
+      }
+
+      alert("Arquivo processado com sucesso!");
     } catch (error) {
-      console.error("Erro ao processar planilha:", error);
-      alert("Erro ao ler o arquivo do BI. Verifique o formato e se o backend está rodando.");
+      console.error(error);
+      alert("Erro ao processar arquivo.");
     } finally {
       setCarregando(false);
     }
   };
 
+  const realizarPassagemDeTurno = (novoTurno) => {
+    // 1. Buscamos o valor real que está no storage AGORA
+    const finalNoStorage = localStorage.getItem('dadosFinaisSolver');
+
+    if (finalNoStorage) {
+      const dadosParaMigrar = JSON.parse(finalNoStorage);
+
+      // 2. Se o cenário final tiver dados (backlog > 0), fazemos a migração
+      if (dadosParaMigrar.backlog > 0) {
+        setDadosIniciais(dadosParaMigrar);
+        localStorage.setItem('dadosIniciaisSolver', finalNoStorage);
+
+        // 3. Limpa o Final para o novo colaborador
+        setDadosFinais(estadoZerado);
+        localStorage.removeItem('dadosFinaisSolver');
+
+        console.log(`Sucesso: Dados do turno anterior movidos para o início do ${novoTurno}`);
+      }
+    } else {
+      // Se não tinha nada no final, apenas resetamos para começar o novo turno limpo
+      setDadosIniciais(estadoZerado);
+      setDadosFinais(estadoZerado);
+      localStorage.removeItem('dadosIniciaisSolver');
+      localStorage.removeItem('dadosFinaisSolver');
+    }
+  };
+
   return (
     <div className={styles.container}>
-      <Header
-        turnoAtual={infoTurno.atual}
-        proximoTurno={infoTurno.proximo}
-        data={dataHoje}
-      />
+      <Header data={dataHoje}
+        onTurnoChange={realizarPassagemDeTurno} />
 
       <section className={styles.pageTitleSection}>
         <h1 className={styles.pageTitle}>Relatório - Tratativas Solver</h1>
-
         <label htmlFor="file-upload" className={styles.uploadBox}>
           <img src={Arquivo} alt="" className={styles.uploadIcon} />
           <span className={styles.uploadText}>
             {carregando ? "Processando..." : "Anexe o arquivo retirado do BI"}
           </span>
-          <input
-            type="file"
-            id="file-upload"
-            className={styles.hiddenInput}
-            onChange={handleFileUpload}
-            accept=".xlsx, .xls"
-          />
+          <input type="file" id="file-upload" className={styles.hiddenInput} onChange={handleFileUpload} accept=".xlsx, .xls" />
         </label>
       </section>
 
@@ -93,29 +184,25 @@ const Dashboard = () => {
         <section className={styles.cardsSection}>
           <CardRelatorio
             titulo="Cenário Inicial"
-            total={dadosIniciais.backlog.toLocaleString('pt-BR', { minimumFractionDigits: 3 }).replace(',', '.')}
+            total={(dadosIniciais.backlog || 0).toLocaleString('pt-BR')}
             cor="#B91C1C"
             itens={dadosIniciais.lista}
-            totalPecas={dadosIniciais.pecasFalta.toLocaleString('pt-BR', { minimumFractionDigits: 3 }).replace(',', '.')}
+            totalPecas={(dadosIniciais.pecasFalta || 0).toLocaleString('pt-BR')}
           />
 
           <CardRelatorio
             titulo="Cenário Final"
-            total={dadosFinais.backlog.toLocaleString('pt-BR', { minimumFractionDigits: 3 }).replace(',', '.')}
+            total={(dadosFinais.backlog || 0).toLocaleString('pt-BR')}
             cor="#007A5E"
             itens={dadosFinais.lista}
-            totalPecas={dadosFinais.pecasFalta.toLocaleString('pt-BR', { minimumFractionDigits: 3 }).replace(',', '.')}
+            totalPecas={(dadosFinais.pecasFalta || 0).toLocaleString('pt-BR')}
           />
         </section>
 
-        {/* AGORA A EVOLUÇÃO SEMPRE APARECE */}
-        <EvolucaoTurno
-          dadosIniciais={dadosIniciais}
-          dadosFinais={dadosFinais}
-          cor="#B91C1C"
-        />
+        <EvolucaoTurno dadosIniciais={dadosIniciais} dadosFinais={dadosFinais} cor="#B91C1C" />
 
-        <ObservacoesTurno />
+        {/* Passamos o turno atual para o componente de observações para ele saber quem está escrevendo */}
+        <ObservacoesTurno turno={infoTurno.atual} />
       </main>
     </div>
   );

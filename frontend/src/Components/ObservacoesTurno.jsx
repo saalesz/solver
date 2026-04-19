@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../Styles/Components/ObservacoesTurno.module.css';
 
 const ObservacoesTurno = () => {
-  // Estado para armazenar os textos de cada categoria
-  const [notas, setNotas] = useState({
+  const [obs, setObs] = useState({
     sobras: "",
     avarias: "",
     packing: "",
@@ -11,24 +10,32 @@ const ObservacoesTurno = () => {
     chamados: ""
   });
 
-  // Função para atualizar o estado conforme o usuário digita
+  useEffect(() => {
+    const salvas = localStorage.getItem('observacoesSolverCategorias');
+    if (salvas) {
+      setObs(JSON.parse(salvas));
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNotas(prev => ({ ...prev, [name]: value }));
+    const novasObs = { ...obs, [name]: value };
+    setObs(novasObs);
+    localStorage.setItem('observacoesSolverCategorias', JSON.stringify(novasObs));
   };
 
+  // Função para ajustar a altura do textarea automaticamente
   const handleInput = (e) => {
-    const element = e.target;
-    element.style.height = "auto"; // Reseta a altura para recalcular
-    element.style.height = `${element.scrollHeight}px`; // Ajusta para a altura do conteúdo
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const categorias = [
-    { id: "sobras", label: "Sobras:", color: "#1A1A1A" },
-    { id: "avarias", label: "Avarias:", color: "#1A1A1A" },
-    { id: "packing", label: "Packing:", color: "#1A1A1A" },
-    { id: "distribuicao", label: "Distribuição:", color: "#1A1A1A" },
-    { id: "chamados", label: "Chamados:", color: "#B91C1C" }, // Vermelho como no print
+    { id: 'sobras', label: 'Sobras:', cor: '#E2E8F0' },
+    { id: 'avarias', label: 'Avarias:', cor: '#E2E8F0' },
+    { id: 'packing', label: 'Packing:', cor: '#E2E8F0' },
+    { id: 'distribuicao', label: 'Distribuição:', cor: '#E2E8F0' },
+    { id: 'chamados', label: 'Chamados:', cor: '#FEE2E2', labelCor: '#B91C1C' },
   ];
 
   return (
@@ -39,18 +46,15 @@ const ObservacoesTurno = () => {
         {categorias.map((cat) => (
           <div key={cat.id} className={styles.linha}>
             <div className={`${styles.badge} ${cat.id === 'chamados' ? styles.badgeChamados : ''}`}>
-              <span style={{ color: cat.color }}>{cat.label}</span>
+              <span style={{ color: cat.labelCor }}>{cat.label}</span>
             </div>
             <textarea
               name={cat.id}
               className={styles.campoTexto}
-              placeholder="Adcione informações relevantes para o próximo turno..."
-              value={notas[cat.id]}
-              onChange={(e) => {
-                handleChange(e); // Sua função de salvar estado
-                handleInput(e);  // Função de ajustar altura
-              }}
-              onInput={handleInput} // Garante o ajuste imediato
+              placeholder="Adicione informações relevantes para o próximo turno..."
+              value={obs[cat.id]} // Corrigido de 'notas' para 'obs'
+              onChange={handleChange}
+              onInput={handleInput} 
               rows="1"
             />
           </div>

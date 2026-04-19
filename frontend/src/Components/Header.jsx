@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../Styles/Components/Header.module.css';
 
 
@@ -7,21 +7,31 @@ import Calendario from '../Assets/Icons/Calendario.svg';
 import Arrow from '../Assets/Icons/Arrow.svg';
 import ArrowSelect from '../Assets/Icons/ArrowSelect.svg';
 
-const Header = ({ turnoAtualInicial, proximoTurnoInicial, data }) => {
-  const [saindo, setSaindo] = useState(turnoAtualInicial || 'T1');
-  const [entrando, setEntrando] = useState(proximoTurnoInicial || 'T2');
+const Header = ({ data, onTurnoChange }) => {
+  const mapeamentoTurnos = { 'T1': 'T2', 'T2': 'T3', 'T3': 'T1' };
 
-  const mapeamentoTurnos = {
-    'T1': 'T2',
-    'T2': 'T3',
-    'T3': 'T1'
-  };
+  // 1. O estado nasce olhando para o que está salvo, ou usa o horário se estiver vazio
+  const [saindo, setSaindo] = useState(() => {
+    return localStorage.getItem('ultimoTurnoRegistrado') || "T1";
+  });
+
+  const [entrando, setEntrando] = useState(() => {
+    return mapeamentoTurnos[saindo] || "T2";
+  });
 
   const handleSaindoChange = (e) => {
     const valor = e.target.value;
     setSaindo(valor);
     setEntrando(mapeamentoTurnos[valor]);
+
+    // 2. Salva na hora para o F5 não resetar
+    localStorage.setItem('ultimoTurnoRegistrado', valor);
+
+    if (onTurnoChange) {
+      onTurnoChange(valor);
+    }
   };
+
 
   return (
     <header className={styles.header}>
