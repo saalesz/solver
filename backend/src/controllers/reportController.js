@@ -2,25 +2,26 @@ const { processReport } = require('./../services/excelProcessor');
 
 exports.uploadReport = (req, res) => {
     try {
+        // 1. Verifica se o arquivo existe
         if (!req.file) {
             return res.status(400).json({ error: "Arquivo não enviado." });
         }
 
         const filePath = req.file.path;
 
-        const result = processReport(req.file.path);
-        console.log("TESTE BACKEND:", result.kpis); // Esse log tem que aparecer no terminal!
-        return res.json(result);
-
-        // Executa o processamento que criamos no utils
+        // 2. Executa o processamento (Apenas UMA vez agora)
         const result = processReport(filePath);
 
-        // LOG PARA DEBUG: Veja isso no terminal do VS Code (não no navegador)
+        // 3. LOG PARA DEBUG: Veja isso no terminal do VS Code
+        console.log("-----------------------------------------");
         console.log("DADOS QUE ESTÃO SAINDO DO BACKEND:", result.kpis);
+        console.log("-----------------------------------------");
 
-        res.json(result);
+        // 4. Envia a resposta para o frontend
+        return res.json(result);
+
     } catch (error) {
         console.error("Erro ao processar:", error);
-        res.status(500).json({ error: "Falha no processamento do Excel." });
+        return res.status(500).json({ error: "Falha no processamento do Excel." });
     }
 };
